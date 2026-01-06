@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signaler un problème | Support Hogust</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+
+<body>
+    <div class="form-container">
+        <header class="form-header">
+            <h1>🎫 Signaler un problème</h1>
+            <p>Décrivez votre problème ci-dessous, notre équipe vous répondra rapidement.</p>
+        </header>
+
+        <!-- Formulaire de création -->
+        <form id="ticketForm" class="ticket-form">
+            <div class="form-group">
+                <label for="title">Titre du problème *</label>
+                <input type="text" id="title" name="title" placeholder="Ex: Erreur lors de la génération des allergènes"
+                    required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description détaillée *</label>
+                <textarea id="description" name="description"
+                    placeholder="Décrivez le problème rencontré, les étapes pour le reproduire, et tout autre détail utile..."
+                    required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="category">Type de problème *</label>
+                <select id="category" name="category" required>
+                    <option value="">-- Sélectionnez une catégorie --</option>
+                    <option value="comprehension">Compréhension produit (questions sur l'utilisation)</option>
+                    <option value="ux">Problème UX/Navigation (difficultés à naviguer)</option>
+                    <option value="technique">Bug technique N8N (erreur, fonctionnalité cassée)</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Envoyer le ticket
+            </button>
+        </form>
+
+        <!-- Message de confirmation (masqué par défaut) -->
+        <div id="successMessage" class="success-message">
+            <div class="success-icon">✓</div>
+            <h2>Ticket envoyé avec succès !</h2>
+            <p>
+                Votre demande a bien été enregistrée. Notre équipe la traitera dans les meilleurs délais.
+            </p>
+            <a href="create-ticket.html" class="btn btn-secondary">
+                Signaler un autre problème
+            </a>
+        </div>
+    </div>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/storage.js"></script>
+    <script src="assets/js/form.js"></script>
+</body>
+
+</html>

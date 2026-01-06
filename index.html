@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord | Support Hogust</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <h1>🎫 Support Hogust</h1>
+            <a href="create-ticket.html" class="btn btn-primary btn-small">+ Nouveau ticket</a>
+        </div>
+    </header>
+
+    <main class="kanban-container">
+        <!-- Colonne À traiter -->
+        <div class="kanban-column todo" data-status="todo">
+            <h2>
+                📥 À traiter
+                <span class="ticket-count" id="count-todo">0</span>
+            </h2>
+            <div class="tickets-list" id="list-todo"></div>
+        </div>
+
+        <!-- Colonne En cours -->
+        <div class="kanban-column inprogress" data-status="inProgress">
+            <h2>
+                🔄 En cours
+                <span class="ticket-count" id="count-inProgress">0</span>
+            </h2>
+            <div class="tickets-list" id="list-inProgress"></div>
+        </div>
+
+        <!-- Colonne Traitée -->
+        <div class="kanban-column done" data-status="done">
+            <h2>
+                ✅ Traitée
+                <span class="ticket-count" id="count-done">0</span>
+            </h2>
+            <div class="tickets-list" id="list-done"></div>
+        </div>
+    </main>
+
+    <!-- Modal détail ticket -->
+    <div id="ticketModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Détail du ticket</h2>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Contenu dynamique -->
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/storage.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/tests.js"></script>
+</body>
+
+</html>
