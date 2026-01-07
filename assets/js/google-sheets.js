@@ -10,13 +10,28 @@ const GoogleSheets = {
     isInited: false,
 
     /**
+     * Helper pour mettre à jour le statut UI
+     */
+    logStatus: (message, isError = false) => {
+        const el = document.getElementById('connection-status');
+        if (el) {
+            el.textContent = message;
+            el.style.color = isError ? 'red' : '#666';
+            if (isError) console.error(message);
+            else console.log(message);
+        }
+    },
+
+    /**
      * Initialise le client Google API
      */
     initClient: async () => {
         if (!CONFIG.GOOGLE.API_KEY || !CONFIG.GOOGLE.CLIENT_ID) {
-            console.error("Configuration Google manquante (API_KEY ou CLIENT_ID)");
+            GoogleSheets.logStatus("Config manquante (Clés)", true);
             return false;
         }
+
+        GoogleSheets.logStatus("Init Google API...");
 
         return new Promise((resolve, reject) => {
             gapi.load('client:auth2', async () => {
@@ -31,10 +46,18 @@ const GoogleSheets = {
                     // Ne PAS signer automatiquement ici (bloqué par les navigateurs)
                     // On vérifie juste l'état
                     GoogleSheets.isInited = true;
+
+                    if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
+                        GoogleSheets.logStatus("Connecté (Auto)");
+                    } else {
+                        GoogleSheets.logStatus("Prêt (Non connecté)");
+                    }
+
                     resolve(true);
 
                 } catch (error) {
-                    console.error("Erreur init Google API:", error);
+                    const msg = "Erreur Init: " + (error.details || error.error || JSON.stringify(error));
+                    GoogleSheets.logStatus(msg, true);
                     reject(error);
                 }
             });
@@ -45,15 +68,26 @@ const GoogleSheets = {
      * Lance la connexion (Doit être appelé par un clic utilisateur)
      */
     signIn: async () => {
+        GoogleSheets.logStatus("Ouverture popup...");
         if (!GoogleSheets.isInited) await GoogleSheets.initClient();
-        return gapi.auth2.getAuthInstance().signIn();
+        try {
+            await gapi.auth2.getAuthInstance().signIn();
+            GoogleSheets.logStatus("Connexion réussie !");
+            return true;
+        } catch (e) {
+            GoogleSheets.logStatus("Erreur Auth: " + JSON.stringify(e), true);
+            throw e;
+        }
     },
 
     /**
      * Déconnexion
      */
     signOut: () => {
-        if (gapi.auth2) gapi.auth2.getAuthInstance().signOut();
+        if (gapi.auth2) {
+            gapi.auth2.getAuthInstance().signOut();
+            GoogleSheets.logStatus("Déconnecté");
+        }
     },
 
     /**
@@ -67,6 +101,7 @@ const GoogleSheets = {
      * Récupère tous les tickets (READ)
      */
     getTickets: async () => {
+        GoogleSheets.logStatus("Chargement tickets...");
         if (!GoogleSheets.isInited) await GoogleSheets.initClient();
 
         try {
@@ -75,6 +110,7 @@ const GoogleSheets = {
                 range: CONFIG.GOOGLE.RANGE,
             });
 
+            GoogleSheets.logStatus("Tickets chargés");
             const rows = response.result.values;
             if (!rows || rows.length === 0) return [];
 
@@ -92,7 +128,8 @@ const GoogleSheets = {
             }));
 
         } catch (error) {
-            console.error("Erreur lecture GSheets:", error);
+            GoogleSheets.logStatus("Erreur lecture: " + (error.result?.error?.message || error.status), true);
+            console.error(error);
             return [];
         }
     },
@@ -122,31 +159,26 @@ const GoogleSheets = {
                 resource: { values: [row] }
             });
 
+            GoogleSheets.logStatus("Ticket sauvegardé");
             return true;
         } catch (error) {
-            console.error("Erreur écriture GSheets:", error);
+            GoogleSheets.logStatus("Erreur sauvegarde: " + error.message, true);
             return false;
         }
     },
 
     /**
      * Met à jour un ticket (WRITE - Update)
-     * Note: C'est complexe car il faut trouver la bonne ligne (Row Index).
-     * Simplification : On relit tout, on trouve l'index, on update.
      */
     updateTicket: async (ticket) => {
         if (!GoogleSheets.isInited) await GoogleSheets.initClient();
 
         try {
-            // 1. Trouver l'index de la ligne (coûteux mais nécessaire sans backend)
             const allTickets = await GoogleSheets.getTickets();
             const index = allTickets.findIndex(t => t.id === ticket.id);
 
             if (index === -1) return false;
 
-            // TODO: Gérer l'offset si headers (ici on suppose pas de header ou index 0 si inclus dans getTickets)
-            // Si getTickets inclut le header (ce qui est le cas avec A:H), et que l'ID ne matche pas le header,
-            // alors index+1 est le bon rowNumber (1-based).
             const rowNumber = index + 1;
             const range = `Feuille 1!A${rowNumber}:H${rowNumber}`;
 
@@ -168,9 +200,10 @@ const GoogleSheets = {
                 resource: { values: [row] }
             });
 
+            GoogleSheets.logStatus("Ticket mis à jour");
             return true;
         } catch (e) {
-            console.error("Erreur update GSheets:", e);
+            GoogleSheets.logStatus("Erreur update: " + e.message, true);
             return false;
         }
     }
