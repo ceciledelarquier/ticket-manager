@@ -7,9 +7,38 @@
 let dragListenersController = null;
 let currentTicketId = null;
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     // Initialisation
-    renderAllTickets();
+
+    // Si Google Sheets activé, gérer l'auth
+    if (CONFIG.GOOGLE.USE_GOOGLE_SHEETS) {
+        const loginBtn = document.getElementById('googleLoginBtn');
+
+        // Initialiser le client sans bloquer le rendu immédiat (si possible)
+        // Mais pour getTickets on a besoin du client.
+        try {
+            // Tenter init silencieux
+            // Note: getTickets appelle initClient, donc on peut lancer renderAllTickets
+            // Mais si pas connecté, getTickets renverra vide ou erreur.
+
+            // On force l'init pour vérifier le statut
+            // (Idéalement on ferait ça dans un "GoogleSheets.checkAuth()" mais on compose avec l'existant)
+        } catch (e) { }
+
+        if (loginBtn) {
+            loginBtn.addEventListener('click', async () => {
+                try {
+                    await GoogleSheets.signIn();
+                    loginBtn.classList.add('hidden');
+                    renderAllTickets(); // Recharger les données
+                } catch (e) {
+                    alert("Connexion échouée : " + JSON.stringify(e));
+                }
+            });
+        }
+    }
+
+    await renderAllTickets();
     setupModal();
 
     // Écouter les changements de localStorage depuis d'autres onglets
@@ -27,13 +56,33 @@ document.addEventListener('DOMContentLoaded', function () {
 /**
  * Affiche tous les tickets dans leurs colonnes respectives
  */
-function renderAllTickets() {
-    const tickets = getTickets();
+async function renderAllTickets() {
+    // Gestion Auth Google
+    if (CONFIG.GOOGLE.USE_GOOGLE_SHEETS) {
+        const loginBtn = document.getElementById('googleLoginBtn');
+        // On doit init le client pour savoir si on est connecté
+        // GoogleSheets.initClient() est idempotent et safe maintenant
+        if (!GoogleSheets.isInited) await GoogleSheets.initClient();
 
+        if (!GoogleSheets.isSignedIn()) {
+            if (loginBtn) loginBtn.classList.remove('hidden');
+            // On ne peut pas récupérer les tickets si pas connecté
+            console.log("Attente connexion Google...");
+            return;
+        } else {
+            if (loginBtn) loginBtn.classList.add('hidden');
+        }
+    }
+
+    const tickets = await getTickets();
+
+    // ... reste du code (identique, le await est la seule différence majeure ici)
     // Vider les colonnes
     const listTodo = document.getElementById('list-todo');
     const listInProgress = document.getElementById('list-inProgress');
     const listDone = document.getElementById('list-done');
+
+    if (!listTodo || !listInProgress || !listDone) return;
 
     listTodo.innerHTML = '';
     listInProgress.innerHTML = '';
@@ -42,7 +91,7 @@ function renderAllTickets() {
     // Compteurs
     const counts = { todo: 0, inProgress: 0, done: 0 };
 
-    // Trier par date décroissante (plus récent en haut) - copie pour ne pas muter
+    // Trier par date décroissante (plus récent en haut)
     const sortedTickets = [...tickets].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     // Afficher chaque ticket
@@ -60,6 +109,17 @@ function renderAllTickets() {
     document.getElementById('count-todo').textContent = counts.todo;
     document.getElementById('count-inProgress').textContent = counts.inProgress;
     document.getElementById('count-done').textContent = counts.done;
+
+    // Gestion de l'état vide pour la colonne "À traiter"
+    if (counts.todo === 0) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        emptyState.innerHTML = `
+            <p>Aucun ticket à traiter. C'est le moment d'en créer un !</p>
+            <a href="create-ticket.html" class="btn btn-primary btn-small">+ Nouveau ticket</a>
+        `;
+        listTodo.appendChild(emptyState);
+    }
 
     // Configurer drag & drop après le rendu
     setupDragAndDrop();
@@ -200,6 +260,8 @@ function handleDrop(e) {
     if (updated) {
         // Re-render
         renderAllTickets();
+    } else {
+        alert("Impossible de déplacer le ticket.");
     }
 }
 
@@ -236,7 +298,10 @@ function setupModal() {
  */
 function openTicketModal(ticketId) {
     const ticket = getTicketById(ticketId);
-    if (!ticket) return;
+    if (!ticket) {
+        alert("Ce ticket est introuvable.");
+        return;
+    }
 
     currentTicketId = ticketId;
 
@@ -370,6 +435,8 @@ function handleAssigneeChange(e) {
         const updated = updateTicket(currentTicketId, { assignedTo: newAssignee });
         if (updated) {
             renderAllTickets();
+        } else {
+            alert("Erreur lors de la mise à jour.");
         }
     }
 }

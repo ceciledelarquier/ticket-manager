@@ -40,6 +40,15 @@ const CONFIG = {
         'todo': 'À traiter',
         'inProgress': 'En cours',
         'done': 'Traitée'
+    },
+
+    // Configuration Google Sheets
+    GOOGLE: {
+        USE_GOOGLE_SHEETS: true,
+        SHEET_ID: '1lZay50MzIJMREAQQDqICPmpUbzxWtsjB6VL8nFT5S-E',
+        API_KEY: 'AIzaSyAMGXX1lAEqIlJfDphUmqvXJR1lC4hSmgA',
+        CLIENT_ID: '585587788552-od14rt35a4p8nuian3glnll5mkgfhn7c.apps.googleusercontent.com',
+        RANGE: 'Feuille 1!A:H' // Plage de données (A:H pour inclure les commentaires en colonne 8)
     }
 };
 

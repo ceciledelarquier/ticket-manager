@@ -6,13 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord | Support Hogust</title>
     <link rel="stylesheet" href="assets/css/styles.css">
+
+    <!-- Scripts Google API -->
+    <script src="https://apis.google.com/js/api.js"></script>
 </head>
 
 <body>
     <header class="app-header">
         <div class="header-content">
             <h1>🎫 Support Hogust</h1>
-            <a href="create-ticket.html" class="btn btn-primary btn-small">+ Nouveau ticket</a>
+            <div class="header-actions">
+                <button id="googleLoginBtn" class="btn btn-secondary btn-small hidden"
+                    style="background-color: #fff; color: #333; border: 1px solid #ccc;">
+                    🔑 Connexion Google
+                </button>
+                <a href="create-ticket.html" class="btn btn-primary btn-small">+ Nouveau ticket</a>
+            </div>
         </div>
     </header>
 
@@ -59,6 +68,7 @@
     </div>
 
     <script src="assets/js/config.js"></script>
+    <script src="assets/js/google-sheets.js"></script>
     <script src="assets/js/storage.js"></script>
     <script src="assets/js/app.js"></script>
     <script src="assets/js/tests.js"></script>

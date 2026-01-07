@@ -387,6 +387,53 @@ body {
 }
 
 /* ==============================================
+   EMPTY STATE
+   ============================================== */
+.empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    background: var(--color-bg);
+    border-radius: var(--radius-md);
+    margin-top: 16px;
+    border: 2px dashed var(--color-border);
+}
+
+.empty-state p {
+    color: var(--color-text-light);
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+}
+
+/* ==============================================
+   RESPONSIVE DESIGN
+   ============================================== */
+@media (max-width: 600px) {
+    .header-content {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+
+    .header-content h1 {
+        font-size: 1.5rem;
+    }
+
+    .btn-small {
+        width: 100%;
+    }
+
+    .kanban-container {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .kanban-column {
+        max-width: 100%;
+        min-width: 100%;
+    }
+}
+
+/* ==============================================
    DRAG AND DROP
    ============================================== */
 
